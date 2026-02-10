@@ -2,6 +2,8 @@ version: 2
 
 sources:
   - name: raw_moma
+    database: moma_analytics
+    schema: main
     description: "Raw MoMA collection data"
     tables:
       - name: artworks

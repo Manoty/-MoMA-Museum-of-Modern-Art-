@@ -8,7 +8,7 @@
 with source_artists as (
   select
     ConstituentID,
-    Name,
+    DisplayName,
     Nationality,
     Gender,
     BeginDate,
@@ -19,12 +19,12 @@ with source_artists as (
 cleaned as (
   select
     ConstituentID::int as artist_id,
-    Name as artist_name,
+    DisplayName as artist_name,
     Nationality,
     Gender,
     BeginDate::int as birth_year,
     case when EndDate = '' then null else EndDate::int end as death_year,
-    row_number() over (partition by ConstituentID order by Name) as rn
+    row_number() over (partition by ConstituentID order by DisplayName) as rn
   from source_artists
 )
 
