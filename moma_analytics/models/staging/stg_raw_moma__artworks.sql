@@ -21,16 +21,15 @@ with source_artworks as (
 
 cleaned as (
   select
-    ObjectID::int as artwork_id,
+    try_cast(ObjectID as int) as artwork_id,
     trim(Title) as artwork_title,
-    -- Parse artist_id from ConstituentID (may have multiple IDs)
-    nullif(regexp_replace(ConstituentID, '[^0-9]', ''), '')::int as artist_id,
+    try_cast(regexp_replace(ConstituentID, '[^0-9]', '') as int) as artist_id,
     Date as date_raw,
     Medium,
     Dimensions,
-    DateAcquired::date as acquisition_date,
-    "Height (cm)"::float as height_cm,
-    "Width (cm)"::float as width_cm
+    try_cast(DateAcquired as date) as acquisition_date,
+    try_cast("Height (cm)" as float) as height_cm,
+    try_cast("Width (cm)" as float) as width_cm
   from source_artworks
 )
 
@@ -47,4 +46,4 @@ select
 from cleaned
 where artwork_id is not null and artist_id is not null
 
--- Description: Cleans artworks data. Trims titles, parses artist_id, casts dates. Filters null IDs.
+-- Description: Cleans artworks data. Handles invalid dates/dimensions with try_cast. Filters nulls.
