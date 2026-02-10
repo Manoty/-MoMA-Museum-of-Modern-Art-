@@ -22,8 +22,9 @@ cleaned as (
     DisplayName as artist_name,
     Nationality,
     Gender,
-    BeginDate::int as birth_year,
-    case when EndDate = '' then null else EndDate::int end as death_year,
+    -- Handle invalid dates gracefully
+    try_cast(BeginDate as int) as birth_year,
+    try_cast(EndDate as int) as death_year,
     row_number() over (partition by ConstituentID order by DisplayName) as rn
   from source_artists
 )
@@ -38,4 +39,4 @@ select
 from cleaned
 where rn = 1
 
--- Description: Deduplicated, cleaned artists from raw source. Removes duplicate ConstituentIDs, casts dates to integers.
+-- Description: Deduplicated, cleaned artists from raw source. Handles invalid dates with try_cast.
