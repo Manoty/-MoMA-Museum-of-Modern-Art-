@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: stg_raw_moma__artists
+    description: "Cleaned, deduplicated artists from raw source"
+    columns:
+      - name: artist_id
+        description: "Primary key: unique artist identifier"
+        tests:
+          - not_null
+          - unique
+      - name: artist_name
+        description: "Full name of the artist"
+        tests:
+          - not_null
+      - name: Nationality
+        description: "Artist's nationality"
+      - name: Gender
+        description: "Gender (Male/Female/Other)"
+        tests:
+          - accepted_values:
+              values: ['Male', 'Female']
+      - name: birth_year
+        description: "Birth year (integer)"
+      - name: death_year
+        description: "Death year (nullable if living)"
+
+  - name: stg_raw_moma__artworks
+    description: "Cleaned artworks with parsed artist IDs and dates"
+    columns:
+      - name: artwork_id
+        description: "Primary key: unique artwork identifier"
+        tests:
+          - not_null
+          - unique
+      - name: artwork_title
+        description: "Trimmed artwork title"
+        tests:
+          - not_null
+      - name: artist_id
+        description: "Foreign key to stg_raw_moma__artists"
+        tests:
+          - not_null
+      - name: date_raw
+        description: "Creation date (raw format from source)"
+      - name: Medium
+        description: "Material and technique"
+      - name: Dimensions
+        description: "Physical dimensions"
+      - name: acquisition_date
+        description: "When MoMA acquired the work (date type)"
+
