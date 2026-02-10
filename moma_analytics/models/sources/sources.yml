@@ -1,0 +1,35 @@
+version: 2
+
+sources:
+  - name: raw_moma
+    description: "Raw MoMA collection data"
+    tables:
+      - name: artworks
+        description: "Raw artworks dataset"
+        columns:
+          - name: ObjectID
+            description: "Unique artwork identifier"
+          - name: Title
+            description: "Artwork title"
+          - name: ConstituentID
+            description: "Artist ID"
+          - name: Date
+            description: "Creation date"
+          - name: Medium
+            description: "Material and technique"
+
+      - name: artists
+        description: "Raw artists dataset"
+        columns:
+          - name: ConstituentID
+            description: "Artist ID"
+          - name: Name
+            description: "Artist full name"
+          - name: Nationality
+            description: "Artist nationality"
+          - name: Gender
+            description: "Artist gender"
+          - name: BeginDate
+            description: "Birth year"
+          - name: EndDate
+            description: "Death year"
