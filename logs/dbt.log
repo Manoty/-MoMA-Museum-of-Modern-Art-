@@ -1,0 +1,28 @@
+[0m23:05:53.473872 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A6486BB250>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A64BEB5710>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A64BEB5A90>]}
+
+
+============================== 23:05:53.485515 | 171ab6c5-f8ae-44d6-90f4-26d4fd52f466 ==============================
+[0m23:05:53.485515 [info ] [MainThread]: Running with dbt=1.11.4
+[0m23:05:53.488504 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'no_print': 'None', 'static_parser': 'True', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': 'C:\\Users\\Evans Moseti\\.dbt', 'invocation_command': 'dbt init moma_analytics', 'use_colors': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'log_path': 'logs'}
+[0m23:05:53.556512 [debug] [MainThread]: Starter project path: C:\kev\MoMA (Museum of Modern Art)\museum_modernart\venv\Lib\site-packages\dbt\include\starter_project
+[0m23:05:53.771552 [info ] [MainThread]: 
+Your new dbt project "moma_analytics" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m23:05:53.773898 [info ] [MainThread]: Setting up your profile.
+[0m23:06:04.486456 [debug] [MainThread]: Command `dbt init` succeeded at 23:06:04.486456 after 11.24 seconds
+[0m23:06:04.487452 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A64BEB4610>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A64BEB0450>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A64528E5D0>]}
+[0m23:06:04.489497 [debug] [MainThread]: Flushing usage events
+[0m23:06:05.515505 [debug] [MainThread]: An error was encountered while trying to flush usage events
