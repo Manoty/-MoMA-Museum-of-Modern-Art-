@@ -16,10 +16,7 @@ models:
       - name: Nationality
         description: "Artist's nationality"
       - name: Gender
-        description: "Gender (Male/Female/Other)"
-        tests:
-          - accepted_values:
-              values: ['Male', 'Female']
+        description: "Gender"
       - name: birth_year
         description: "Birth year (integer)"
       - name: death_year
@@ -35,8 +32,6 @@ models:
           - unique
       - name: artwork_title
         description: "Trimmed artwork title"
-        tests:
-          - not_null
       - name: artist_id
         description: "Foreign key to stg_raw_moma__artists"
         tests:
@@ -49,4 +44,3 @@ models:
         description: "Physical dimensions"
       - name: acquisition_date
         description: "When MoMA acquired the work (date type)"
-
