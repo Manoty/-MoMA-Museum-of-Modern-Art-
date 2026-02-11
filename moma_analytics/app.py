@@ -8,10 +8,11 @@ st.markdown("*Powered by dbt + DuckDB*")
 
 conn = duckdb.connect('moma_analytics.duckdb')
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
     "📊 Summary", "📈 Trends", "🎨 Medium", 
     "👥 Artists", "📊 Decade", "🗺️ Nationality-Year", 
-    "🎨 Medium-Trends", "🌍 Geographic", "📏 Artwork Size", "🎓 Artist Lifespan"
+    "🎨 Medium-Trends", "🌍 Geographic", "📏 Artwork Size", 
+    "🎓 Lifespan", "🎯 Concentration", "📋 Decade-Detail"
 ])
 
 with tab1:
@@ -200,5 +201,70 @@ with tab10:
     st.subheader("Full Lifespan Analysis")
     st.dataframe(agg_lifespan.head(100), width='stretch')
 
+with tab11:
+    st.subheader("🎯 Collection Concentration (Pareto Analysis)")
+    
+    agg_concentration = conn.execute("SELECT * FROM agg_collection_concentration").df()
+    
+    st.markdown("**How many artists represent X% of the collection?**")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Top 20 Artists - Cumulative % of Collection")
+        conc_chart = agg_concentration.head(20)[['artist_name', 'cumulative_pct']].set_index('artist_name')
+        st.line_chart(conc_chart)
+    
+    with col2:
+        st.subheader("Cumulative Artworks (Top 20)")
+        cumul_chart = agg_concentration.head(20)[['artist_name', 'cumulative_artworks']].set_index('artist_name')
+        st.line_chart(cumul_chart)
+    
+    st.markdown("---")
+    
+    # Key insights
+    top_50_pct = agg_concentration[agg_concentration['cumulative_pct'] <= 50].shape[0]
+    top_80_pct = agg_concentration[agg_concentration['cumulative_pct'] <= 80].shape[0]
+    top_90_pct = agg_concentration[agg_concentration['cumulative_pct'] <= 90].shape[0]
+    
+    st.subheader("Key Insights")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Artists for 50%", top_50_pct)
+    col2.metric("Artists for 80%", top_80_pct)
+    col3.metric("Artists for 90%", top_90_pct)
+    
+    st.markdown("---")
+    st.subheader("Full Concentration Data")
+    st.dataframe(agg_concentration, width='stretch')
+
+with tab12:
+    st.subheader("📋 Decade-by-Decade Detailed Breakdown")
+    
+    agg_decade_detail = conn.execute("SELECT * FROM agg_decade_detailed_breakdown").df()
+    
+    st.markdown("**Collection composition by decade, nationality, and medium**")
+    
+    # Decade selector
+    decades = sorted(agg_decade_detail['decade'].unique(), reverse=True)
+    selected_decade = st.selectbox("Select Decade", decades)
+    
+    decade_data = agg_decade_detail[agg_decade_detail['decade'] == selected_decade]
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader(f"Top Nationalities ({int(selected_decade)}s)")
+        nat_data = decade_data.groupby('artist_nationality')['artwork_count'].sum().nlargest(10).sort_values(ascending=True)
+        st.bar_chart(nat_data)
+    
+    with col2:
+        st.subheader(f"Top Mediums ({int(selected_decade)}s)")
+        med_data = decade_data.groupby('Medium')['artwork_count'].sum().nlargest(10).sort_values(ascending=True)
+        st.bar_chart(med_data)
+    
+    st.markdown("---")
+    st.subheader(f"Detailed Data for {int(selected_decade)}s Decade")
+    st.dataframe(decade_data.sort_values('artwork_count', ascending=False), width='stretch')
+
 st.markdown("---")
-st.success("✅ MoMA Analytics Dashboard - 10 Complete Analyses!")
+st.success("✅ MoMA Analytics Dashboard - 12 Complete Analyses Complete!")
