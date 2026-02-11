@@ -9,19 +9,48 @@ st.markdown("*Powered by dbt + DuckDB*")
 # Connect to DuckDB
 conn = duckdb.connect('moma_analytics.duckdb')
 
-# Load data
+# Load data with error handling
 @st.cache_data
 def load_data():
-    dim_artist = conn.execute("SELECT * FROM dim_artist").df()
-    dim_artwork = conn.execute("SELECT * FROM dim_artwork").df()
-    fct = conn.execute("SELECT * FROM fct_artwork_acquisition").df()
-    agg = conn.execute("SELECT * FROM agg_acquisitions_by_year_nationality").df()
-    return dim_artist, dim_artwork, fct, agg
+    try:
+        dim_artist = conn.execute("SELECT * FROM dim_artist").df()
+        dim_artwork = conn.execute("SELECT * FROM dim_artwork").df()
+        fct = conn.execute("SELECT * FROM fct_artwork_acquisition").df()
+        agg_year_nat = conn.execute("SELECT * FROM agg_acquisitions_by_year_nationality").df()
+        
+        # Try to load new tables, catch errors
+        try:
+            agg_medium = conn.execute("SELECT * FROM agg_by_medium").df()
+        except:
+            st.warning("agg_by_medium table not found")
+            agg_medium = pd.DataFrame()
+        
+        try:
+            agg_decade = conn.execute("SELECT * FROM agg_by_decade").df()
+        except:
+            st.warning("agg_by_decade table not found")
+            agg_decade = pd.DataFrame()
+        
+        try:
+            agg_artists = conn.execute("SELECT * FROM agg_top_artists").df()
+        except:
+            st.warning("agg_top_artists table not found")
+            agg_artists = pd.DataFrame()
+        
+        return dim_artist, dim_artwork, fct, agg_year_nat, agg_medium, agg_decade, agg_artists
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        return None, None, None, None, None, None, None
 
-dim_artist, dim_artwork, fct, agg = load_data()
+dim_artist, dim_artwork, fct, agg_year_nat, agg_medium, agg_decade, agg_artists = load_data()
+
+# Check if data loaded
+if dim_artist is None:
+    st.error("Failed to load data. Check your DuckDB connection.")
+    st.stop()
 
 # Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Summary", "📈 Trends", "👤 Artists", "🖼️ Artworks"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Summary", "📈 Trends", "🎨 Medium", "👥 Top Artists", "👤 Demographics"])
 
 with tab1:
     st.subheader("Collection Overview")
@@ -33,7 +62,6 @@ with tab1:
     
     st.markdown("---")
     
-    # Gender distribution chart
     st.subheader("Artists by Gender")
     gender_counts = dim_artist['Gender'].value_counts()
     st.bar_chart(gender_counts)
@@ -45,59 +73,91 @@ with tab1:
 with tab2:
     st.subheader("Acquisitions Over Time")
     
-    # Acquisitions by year
-    agg_by_year = agg.groupby('acquisition_year')['artwork_count'].sum().sort_index()
+    agg_by_year = agg_year_nat.groupby('acquisition_year')['artwork_count'].sum().sort_index()
     st.bar_chart(agg_by_year)
     
     st.markdown("---")
     
-    # Top nationalities
+    if not agg_decade.empty:
+        st.subheader("Acquisitions by Decade")
+        decade_chart = agg_decade.set_index('decade')['artwork_count']
+        st.bar_chart(decade_chart)
+    
+    st.markdown("---")
+    
     st.subheader("Top 10 Nationalities by Acquisitions")
-    top_nat = agg.groupby('artist_nationality')['artwork_count'].sum().nlargest(10).sort_values()
+    top_nat = agg_year_nat.groupby('artist_nationality')['artwork_count'].sum().nlargest(10).sort_values()
     st.bar_chart(top_nat)
     
     st.markdown("---")
     
     st.subheader("Detailed Year & Nationality Data")
-    st.dataframe(agg.sort_values('acquisition_year', ascending=False).head(30), use_container_width=True)
+    st.dataframe(agg_year_nat.sort_values('acquisition_year', ascending=False).head(30), width='stretch')
 
 with tab3:
+    st.subheader("Analysis 1: Medium/Technique Popularity")
+    
+    st.markdown("**What materials/techniques does MoMA collect most?**")
+    
+    if not agg_medium.empty:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Top 15 Mediums by Count")
+            top_mediums = agg_medium.head(15).set_index('Medium')['artwork_count']
+            st.bar_chart(top_mediums)
+        
+        with col2:
+            st.subheader("Medium Diversity (Artist Count per Medium)")
+            medium_artists = agg_medium.head(15).set_index('Medium')['artist_count']
+            st.bar_chart(medium_artists)
+        
+        st.markdown("---")
+        st.subheader("Full Medium Statistics")
+        st.dataframe(agg_medium[['Medium', 'artwork_count', 'artist_count', 'avg_artist_age', 'first_acquired', 'last_acquired']], width='stretch')
+    else:
+        st.warning("Medium analysis data not available")
+
+with tab4:
+    st.subheader("Analysis 2: Artist Productivity - Top Artists")
+    
+    st.markdown("**Which artists have the most works in the collection?**")
+    
+    if not agg_artists.empty:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Top 20 Artists by Artwork Count")
+            top_artists_chart = agg_artists.head(20).set_index('artist_name')['artwork_count']
+            st.bar_chart(top_artists_chart)
+        
+        with col2:
+            st.subheader("Top 20 Artists by Medium Diversity")
+            artist_diversity = agg_artists.nlargest(20, 'medium_types').set_index('artist_name')['medium_types']
+            st.bar_chart(artist_diversity)
+        
+        st.markdown("---")
+        st.subheader("Full Artist Productivity Data")
+        st.dataframe(agg_artists.head(50)[['artist_name', 'artist_nationality', 'artwork_count', 'medium_types', 'first_acquired', 'last_acquired', 'years_span']], width='stretch')
+    else:
+        st.warning("Artist productivity data not available")
+
+with tab5:
     st.subheader("Artist Demographics")
     
-    # Age distribution
     st.subheader("Age Distribution of Artists")
     age_data = dim_artist['age_years'].value_counts().sort_index()
     st.bar_chart(age_data)
     
     st.markdown("---")
     
-    # Top nationalities
     st.subheader("Top 15 Nationalities (Artists)")
     nat_counts = dim_artist['Nationality'].value_counts().head(15)
     st.bar_chart(nat_counts)
     
     st.markdown("---")
     st.subheader("Top 20 Artists (by Age)")
-    st.dataframe(dim_artist.nlargest(20, 'age_years')[['artist_name', 'Nationality', 'age_years', 'is_living']], use_container_width=True)
-
-with tab4:
-    st.subheader("Artwork Dimensions Analysis")
-    
-    # Height distribution
-    st.subheader("Height Distribution (cm)")
-    height_data = dim_artwork['height_cm'].value_counts().sort_index()
-    st.bar_chart(height_data.head(50))
-    
-    st.markdown("---")
-    
-    # Width distribution
-    st.subheader("Width Distribution (cm)")
-    width_data = dim_artwork['width_cm'].value_counts().sort_index()
-    st.bar_chart(width_data.head(50))
-    
-    st.markdown("---")
-    st.subheader("Top 20 Largest Artworks")
-    st.dataframe(dim_artwork.nlargest(20, 'area_cm2')[['artwork_title', 'Medium', 'height_cm', 'width_cm', 'area_cm2']], use_container_width=True)
+    st.dataframe(dim_artist.nlargest(20, 'age_years')[['artist_name', 'Nationality', 'age_years', 'is_living']], width='stretch')
 
 st.markdown("---")
-st.success("✅ Dashboard loaded successfully from dbt models!")
+st.success("✅ Dashboard loaded with analyses!")
