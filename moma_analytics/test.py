@@ -1,8 +1,11 @@
-import duckdb
+import streamlit as st
 
-# Connect to your database
-conn = duckdb.connect('moma_analytics.duckdb')
+st.write("Tab 1")
 
-# Print the tables to the terminal
-print("Tables found in DB:")
-print(conn.execute("SHOW TABLES").df())
+tab1, tab2 = st.tabs(["A", "B"])
+
+with tab1:
+    st.write("Content 1")
+
+with tab2:
+    st.write("Content 2")
