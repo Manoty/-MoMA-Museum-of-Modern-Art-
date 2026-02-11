@@ -99,25 +99,17 @@ with tab3:
     
     st.markdown("**What materials/techniques does MoMA collect most?**")
     
-    if not agg_medium.empty:
-        col1, col2 = st.columns(2)
+    st.write(f"Loaded {len(agg_medium)} mediums")
+    
+    if len(agg_medium) > 0:
+        st.subheader("Top 15 Mediums by Count")
+        top_med = agg_medium.head(15)
+        st.write(top_med)
         
-        with col1:
-            st.subheader("Top 15 Mediums by Count")
-            top_mediums = agg_medium.head(15).set_index('Medium')['artwork_count']
-            st.bar_chart(top_mediums)
-        
-        with col2:
-            st.subheader("Medium Diversity (Artist Count per Medium)")
-            medium_artists = agg_medium.head(15).set_index('Medium')['artist_count']
-            st.bar_chart(medium_artists)
-        
-        st.markdown("---")
-        st.subheader("Full Medium Statistics")
-        st.dataframe(agg_medium[['Medium', 'artwork_count', 'artist_count', 'avg_artist_age', 'first_acquired', 'last_acquired']], width='stretch')
+        chart_data = top_med[['Medium', 'artwork_count']].set_index('Medium')
+        st.bar_chart(chart_data)
     else:
-        st.warning("Medium analysis data not available")
-
+        st.error("No medium data loaded")
 with tab4:
     st.subheader("Analysis 2: Artist Productivity - Top Artists")
     

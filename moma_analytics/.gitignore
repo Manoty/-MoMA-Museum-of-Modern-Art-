@@ -2,3 +2,8 @@
 target/
 dbt_packages/
 logs/
+
+*.duckdb
+*.db
+*.sqlite
+*.csv
