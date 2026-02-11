@@ -8,10 +8,10 @@ st.markdown("*Powered by dbt + DuckDB*")
 
 conn = duckdb.connect('moma_analytics.duckdb')
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
     "📊 Summary", "📈 Trends", "🎨 Medium", 
     "👥 Artists", "📊 Decade", "🗺️ Nationality-Year", 
-    "🎨 Medium-Trends", "🌍 Geographic"
+    "🎨 Medium-Trends", "🌍 Geographic", "📏 Artwork Size", "🎓 Artist Lifespan"
 ])
 
 with tab1:
@@ -154,5 +154,51 @@ with tab8:
     st.subheader("Complete Geographic Diversity Breakdown")
     st.dataframe(agg_geo, width='stretch')
 
+with tab9:
+    st.subheader("📏 Artwork Size Trends Over Time")
+    
+    agg_size = conn.execute("SELECT * FROM agg_artwork_size_by_decade").df()
+    
+    st.markdown("**Are newer artworks larger or smaller than old ones?**")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Average Artwork Area by Decade")
+        size_data = agg_size[['decade', 'avg_area_cm2']].set_index('decade').sort_index()
+        st.line_chart(size_data)
+    
+    with col2:
+        st.subheader("Average Height & Width by Decade")
+        hw_data = agg_size[['decade', 'avg_height_cm', 'avg_width_cm']].set_index('decade').sort_index()
+        st.line_chart(hw_data)
+    
+    st.markdown("---")
+    st.subheader("Size Trends Data")
+    st.dataframe(agg_size, width='stretch')
+
+with tab10:
+    st.subheader("🎓 Artist Lifespan Analysis")
+    
+    agg_lifespan = conn.execute("SELECT * FROM agg_artist_lifespan_analysis").df()
+    
+    st.markdown("**How does artist lifespan relate to collection presence?**")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Artists with Most Works vs Lifespan")
+        lifespan_chart = agg_lifespan.nlargest(20, 'total_artworks')[['artist_name', 'lifespan_years']].set_index('artist_name')
+        st.bar_chart(lifespan_chart)
+    
+    with col2:
+        st.subheader("Avg Age at Acquisition (Top Artists)")
+        age_chart = agg_lifespan.nlargest(20, 'total_artworks')[['artist_name', 'avg_age_at_acquisition']].set_index('artist_name')
+        st.bar_chart(age_chart)
+    
+    st.markdown("---")
+    st.subheader("Full Lifespan Analysis")
+    st.dataframe(agg_lifespan.head(100), width='stretch')
+
 st.markdown("---")
-st.success("✅ MoMA Analytics Dashboard - 8 Complete Analyses!")
+st.success("✅ MoMA Analytics Dashboard - 10 Complete Analyses!")
