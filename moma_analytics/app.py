@@ -1,8 +1,10 @@
 import streamlit as st
 import duckdb
 import pandas as pd
+import os
 
 st.set_page_config(page_title="MoMA Analytics", layout="wide")
+
 st.title("🎨 MoMA Collection Analytics")
 st.markdown("*Powered by dbt + DuckDB*")
 
