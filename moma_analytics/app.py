@@ -14,24 +14,22 @@ conn = duckdb.connect(':memory:')
 @st.cache_data
 def load_data():
     try:
-        # List what's in moma_analytics folder
         moma_path = '/mount/src/-moma-museum-of-modern-art-/moma_analytics'
-        if os.path.exists(moma_path):
-            st.write(f"Contents of {moma_path}:")
-            st.write(os.listdir(moma_path))
-            
-            seeds_path = os.path.join(moma_path, 'seeds')
-            if os.path.exists(seeds_path):
-                st.write(f"Contents of seeds/:")
-                st.write(os.listdir(seeds_path))
-            else:
-                st.error(f"seeds folder not found at {seeds_path}")
-                return False
         
-        artworks_path = os.path.join(moma_path, 'seeds/artworks.csv')
+        # artworks.csv is in data/ folder, not seeds/
+        artworks_path = os.path.join(moma_path, 'data/artworks.csv')
         artists_path = os.path.join(moma_path, 'seeds/artists.csv')
         
-        st.write(f"Loading from: {artworks_path}")
+        st.write(f"Loading artworks from: {artworks_path}")
+        st.write(f"Loading artists from: {artists_path}")
+        
+        if not os.path.exists(artworks_path):
+            st.error(f"artworks.csv not found at {artworks_path}")
+            # List data folder
+            data_path = os.path.join(moma_path, 'data')
+            if os.path.exists(data_path):
+                st.write(f"Contents of data/: {os.listdir(data_path)}")
+            return False
         
         artworks = pd.read_csv(artworks_path)
         artists = pd.read_csv(artists_path)
@@ -39,12 +37,14 @@ def load_data():
         conn.register('artworks_raw', artworks)
         conn.register('artists_raw', artists)
         
-        st.success("✅ Data loaded!")
+        st.success(f"✅ Data loaded! {len(artworks)} artworks, {len(artists)} artists")
         return True
     except Exception as e:
         st.error(f"Error: {e}")
+        import traceback
+        st.write(traceback.format_exc())
         return False
-
+    
 if not load_data():
     st.stop()
 
