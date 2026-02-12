@@ -10,14 +10,35 @@ st.markdown("*Powered by dbt + DuckDB*")
 # Connect to DuckDB
 conn = duckdb.connect(':memory:')
 
-# Load CSV files
+# Load CSV files - handle both local and Streamlit Cloud paths
 @st.cache_data
 def load_data():
     try:
-        artworks = pd.read_csv('seeds/artworks.csv')
-        artists = pd.read_csv('seeds/artists.csv')
+        # Try different path locations
+        paths_to_try = [
+            'seeds/artworks.csv',
+            'moma_analytics/seeds/artworks.csv',
+            '/mount/src/-moma-museum-of-modern-art-/moma_analytics/seeds/artworks.csv'
+        ]
         
-        # Create tables from pandas
+        artworks_path = None
+        artists_path = None
+        
+        for path in paths_to_try:
+            if os.path.exists(path):
+                artworks_path = path
+                artists_path = path.replace('artworks.csv', 'artists.csv')
+                break
+        
+        if not artworks_path:
+            st.error(f"CSV files not found. Tried: {paths_to_try}")
+            st.write(f"Current directory: {os.getcwd()}")
+            st.write(f"Files in directory: {os.listdir('.')}")
+            return False
+        
+        artworks = pd.read_csv(artworks_path)
+        artists = pd.read_csv(artists_path)
+        
         conn.register('artworks_raw', artworks)
         conn.register('artists_raw', artists)
         
@@ -28,6 +49,7 @@ def load_data():
 
 if not load_data():
     st.stop()
+
 
 # Define tabs
 tabs = st.tabs([
