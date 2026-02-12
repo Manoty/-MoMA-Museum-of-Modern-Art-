@@ -14,27 +14,24 @@ conn = duckdb.connect(':memory:')
 @st.cache_data
 def load_data():
     try:
-        # Try different path locations
+        # List what's in moma_analytics folder
+        moma_path = '/mount/src/-moma-museum-of-modern-art-/moma_analytics'
+        if os.path.exists(moma_path):
+            st.write(f"Contents of {moma_path}:")
+            st.write(os.listdir(moma_path))
+            
+            seeds_path = os.path.join(moma_path, 'seeds')
+            if os.path.exists(seeds_path):
+                st.write(f"Contents of seeds/:")
+                st.write(os.listdir(seeds_path))
+            else:
+                st.error(f"seeds folder not found at {seeds_path}")
+                return False
         
-        paths_to_try = [
-            '/mount/src/-moma-museum-of-modern-art-/moma_analytics/seeds/artworks.csv',
-            'moma_analytics/seeds/artworks.csv',
-            'seeds/artworks.csv'
-        ]
-        artworks_path = None
-        artists_path = None
+        artworks_path = os.path.join(moma_path, 'seeds/artworks.csv')
+        artists_path = os.path.join(moma_path, 'seeds/artists.csv')
         
-        for path in paths_to_try:
-            if os.path.exists(path):
-                artworks_path = path
-                artists_path = path.replace('artworks.csv', 'artists.csv')
-                break
-        
-        if not artworks_path:
-            st.error(f"CSV files not found. Tried: {paths_to_try}")
-            st.write(f"Current directory: {os.getcwd()}")
-            st.write(f"Files in directory: {os.listdir('.')}")
-            return False
+        st.write(f"Loading from: {artworks_path}")
         
         artworks = pd.read_csv(artworks_path)
         artists = pd.read_csv(artists_path)
@@ -42,9 +39,10 @@ def load_data():
         conn.register('artworks_raw', artworks)
         conn.register('artists_raw', artists)
         
+        st.success("✅ Data loaded!")
         return True
     except Exception as e:
-        st.error(f"Error loading data: {e}")
+        st.error(f"Error: {e}")
         return False
 
 if not load_data():
