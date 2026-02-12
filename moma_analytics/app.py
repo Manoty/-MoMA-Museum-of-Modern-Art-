@@ -15,12 +15,12 @@ conn = duckdb.connect(':memory:')
 def load_data():
     try:
         # Try different path locations
-        paths_to_try = [
-            'seeds/artworks.csv',
-            'moma_analytics/seeds/artworks.csv',
-            '/mount/src/-moma-museum-of-modern-art-/moma_analytics/seeds/artworks.csv'
-        ]
         
+        paths_to_try = [
+            '/mount/src/-moma-museum-of-modern-art-/moma_analytics/seeds/artworks.csv',
+            'moma_analytics/seeds/artworks.csv',
+            'seeds/artworks.csv'
+        ]
         artworks_path = None
         artists_path = None
         
